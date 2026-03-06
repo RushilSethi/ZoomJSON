@@ -2,7 +2,7 @@
 
 **A modern JSON explorer, formatter, and diff tool built for developers who work with JSON every day.**
 
-🔗 **Live App:** [zoomjson.app](https://zoomjson.app)
+🔗 **Live App:** [https://zoomjson.netlify.app/](https://zoomjson.netlify.app/)
 
 ---
 
@@ -61,8 +61,6 @@ npm install
 # Start the development server
 npm run dev
 ```
-
-The app will be available at `http://localhost:5173`.
 
 ## Contributing
 
