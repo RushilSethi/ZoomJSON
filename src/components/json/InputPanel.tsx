@@ -1,16 +1,17 @@
 import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, AlertCircle, Minimize2, Maximize2, Scissors, Copy, Check, Expand, MoreHorizontal } from "lucide-react";
+import { Upload, AlertCircle, Minimize2, Maximize2, Scissors, Copy, Check, Expand, MoreHorizontal, Lightbulb } from "lucide-react";
 
 interface InputPanelProps {
   onParse: (input: string) => void;
   error: string | null;
+  suggestion?: string;
   onOpenFullscreen?: () => void;
   value: string;
   onValueChange: (val: string) => void;
 }
 
-export function InputPanel({ onParse, error, onOpenFullscreen, value, onValueChange }: InputPanelProps) {
+export function InputPanel({ onParse, error, suggestion, onOpenFullscreen, value, onValueChange }: InputPanelProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -214,10 +215,23 @@ export function InputPanel({ onParse, error, onOpenFullscreen, value, onValueCha
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="flex items-center gap-2 mt-2 text-xs text-destructive"
+            className="mt-2"
           >
-            <AlertCircle size={12} />
-            <span>{error}</span>
+            <div className="flex items-center gap-2 text-xs text-destructive">
+              <AlertCircle size={12} />
+              <span>{error}</span>
+            </div>
+            {suggestion && (
+              <motion.div
+                initial={{ opacity: 0, y: -2 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.15, delay: 0.1 }}
+                className="flex items-start gap-2 mt-1.5 text-xs text-muted-foreground bg-muted/30 rounded-md p-2"
+              >
+                <Lightbulb size={11} className="text-primary mt-0.5 flex-shrink-0" />
+                <span className="leading-relaxed">{suggestion}</span>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

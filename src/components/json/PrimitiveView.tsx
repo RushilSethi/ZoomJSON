@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Check, Circle, Copy } from "lucide-react";
 import { detectValueType, formatDate, truncateString } from "@/utils/formatValue";
+import { SmartTextDisplay } from "@/components/ui/SmartTextDisplay";
+import { CodeHighlighter } from "@/components/ui/CodeHighlighter";
+import { HtmlRenderer } from "@/components/ui/HtmlRenderer";
+import { HtmlArrayRenderer } from "@/components/ui/HtmlArrayRenderer";
+import { detectCodeLanguage, isHtmlContent } from "@/utils/codeDetection";
 
 interface PrimitiveViewProps {
   value: unknown;
@@ -51,40 +56,67 @@ export function PrimitiveView({ value, copyValue }: PrimitiveViewProps) {
 
       case "string": {
         const str = value as string;
-        const { text, truncated } = truncateString(str);
-        if (truncated && !expanded) {
+        const codeDetection = detectCodeLanguage(str);
+        const isHtml = isHtmlContent(str);
+        
+        // Check if this is a JSON string containing an array of HTML strings
+        let parsedArray = null;
+        try {
+          parsedArray = JSON.parse(str);
+        } catch {
+          // Not valid JSON, continue with normal processing
+        }
+        
+        // Handle array of HTML strings
+        if (parsedArray && Array.isArray(parsedArray) && 
+            parsedArray.every(item => typeof item === 'string') &&
+            parsedArray.some(item => isHtmlContent(item))) {
           return (
-            <span className="font-mono">
-              <span className="text-foreground">{text}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setExpanded(true);
-                }}
-                className="ml-1 text-primary text-xs hover:underline"
-              >
-                …more
-              </button>
-            </span>
+            <div className="mt-2">
+              <HtmlArrayRenderer 
+                htmlArray={parsedArray}
+                maxHeight={200}
+              />
+            </div>
           );
         }
-        if (truncated && expanded) {
+        
+        if (isHtml) {
           return (
-            <span className="font-mono">
-              <span className="text-foreground break-all">{str}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setExpanded(false);
-                }}
-                className="ml-1 text-primary text-xs hover:underline"
-              >
-                less
-              </button>
-            </span>
+            <div className="mt-2">
+              <HtmlRenderer 
+                html={str}
+                maxHeight={200}
+                showToggle={true}
+                defaultView="rendered"
+              />
+            </div>
           );
         }
-        return <span className="text-foreground font-mono">{str}</span>;
+        
+        if (codeDetection.isCode) {
+          return (
+            <div className="mt-2">
+              <CodeHighlighter 
+                code={str}
+                language={codeDetection.language}
+                maxLines={5}
+                showLineNumbers={false}
+                showCopyButton={false}
+                showLanguageBadge={true}
+              />
+            </div>
+          );
+        }
+        
+        return (
+          <SmartTextDisplay 
+            text={str}
+            maxLength={200}
+            maxLines={3}
+            className="font-mono"
+          />
+        );
       }
 
       default:
@@ -93,15 +125,17 @@ export function PrimitiveView({ value, copyValue }: PrimitiveViewProps) {
   };
 
   return (
-    <span className="inline-flex items-center gap-1.5 group/prim">
-      {renderValue()}
+    <div className="inline-flex items-start gap-1.5 group/prim">
+      <div className="flex-1 min-w-0">
+        {renderValue()}
+      </div>
       <button
         onClick={handleCopy}
-        className="opacity-0 group-hover/prim:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-foreground"
+        className="opacity-0 group-hover/prim:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-foreground flex-shrink-0 mt-1"
         title="Copy value"
       >
         {copied ? <Check size={11} className="text-primary" /> : <Copy size={11} />}
       </button>
-    </span>
+    </div>
   );
 }

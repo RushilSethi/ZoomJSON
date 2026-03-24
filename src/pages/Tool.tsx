@@ -20,6 +20,7 @@ const Index = () => {
   const [inputValue, setInputValue] = useState("");
   const [parsedData, setParsedData] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
+  const [suggestion, setSuggestion] = useState<string | undefined>(undefined);
   const [viewMode, setViewMode] = useState<ViewMode>("explorer");
   const { focusPath, focus, goToIndex, reset, isFocused } = useFocus();
   const search = useSearch(parsedData);
@@ -32,12 +33,14 @@ const Index = () => {
     const result = parseJSON(input);
     setParsedData(result.data);
     setError(result.error);
+    setSuggestion(result.suggestion);
     reset();
   }, [reset]);
 
   const handleReset = useCallback(() => {
     setParsedData(null);
     setError(null);
+    setSuggestion(undefined);
     setInputValue("");
     reset();
   }, [reset]);
@@ -55,6 +58,7 @@ const Index = () => {
     const result = parseJSON(val);
     setParsedData(result.data);
     setError(result.error);
+    setSuggestion(result.suggestion);
   }, []);
 
   return (
@@ -72,6 +76,7 @@ const Index = () => {
           <InputPanel
             onParse={handleParse}
             error={error}
+            suggestion={suggestion}
             onOpenFullscreen={() => setInputFullscreen(true)}
             value={inputValue}
             onValueChange={setInputValue}
