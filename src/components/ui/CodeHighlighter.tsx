@@ -1,8 +1,10 @@
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { vscDarkPlus as darkTheme } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { detectCodeLanguage, formatCodeForDisplay, CodeLanguage } from '@/utils/codeDetection';
 import { useState } from 'react';
 import { Copy, Check, Code, Eye } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 
 interface CodeHighlighterProps {
   code: string;
@@ -25,6 +27,7 @@ export function CodeHighlighter({
 }: CodeHighlighterProps) {
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const { theme } = useTheme();
   
   const detection = propLanguage ? 
     { language: propLanguage, confidence: 100, isCode: true } : 
@@ -36,6 +39,18 @@ export function CodeHighlighter({
   const displayCode = isExpanded || !shouldTruncate ? 
     formattedCode : 
     lines.slice(0, maxLines).join('\n');
+
+  // Determine syntax highlighting theme based on app theme
+  const getSyntaxTheme = () => {
+    // Dark themes: midnight, synthwave, champion
+    if (theme === 'dark' || theme === 'synthwave' || theme === 'champion') {
+      return darkTheme;
+    }
+    // Light themes: cupcake, autumn
+    return oneLight;
+  };
+
+  const syntaxTheme = getSyntaxTheme();
 
   const handleCopy = async () => {
     try {
@@ -83,7 +98,7 @@ export function CodeHighlighter({
         <div className="w-full overflow-auto">
           <SyntaxHighlighter
             language={detection.language}
-            style={vscDarkPlus}
+            style={syntaxTheme}
             showLineNumbers={showLineNumbers}
             customStyle={{
               margin: 0,
